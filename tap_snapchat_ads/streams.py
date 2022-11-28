@@ -94,6 +94,155 @@ class AdAccountsStream(SnapchatAdsStream):
         }
 
 
+class AdsStream(SnapchatAdsStream):
+    name = "ads"
+    path = "/adaccounts/{ad_account_id}/ads"
+    parent_stream_type = AdAccountsStream
+    ignore_parent_replication_key = True
+    records_jsonpath = "$.ads[*].ad"
+    primary_keys = ["id"]
+    replication_key = "updated_at"
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("updated_at", th.DateTimeType),
+        th.Property("created_at", th.DateTimeType),
+        th.Property("name", th.StringType),
+        th.Property("paying_advertiser_name", th.StringType),
+        th.Property("ad_account_id", th.StringType),
+        th.Property("ad_squad_id", th.StringType),
+        th.Property("creative_id", th.StringType),
+        th.Property("status", th.StringType),
+        th.Property("type", th.StringType),
+        th.Property("render_type", th.StringType),
+        th.Property("review_status", th.StringType),
+        th.Property("review_status_reasons", th.ArrayType(th.StringType)),
+        th.Property("third_party_paid_impression_tracking_urls", th.ArrayType(
+            th.ObjectType(
+                th.Property("tracking_url_metadata", th.ObjectType()),
+                th.Property("expanded_tracking_url", th.StringType),
+                th.Property("tracking_url", th.StringType)
+            )
+        )),
+        th.Property("third_party_swipe_tracking_urls", th.ArrayType(
+            th.ObjectType(
+                th.Property("tracking_url_metadata", th.ObjectType()),
+                th.Property("expanded_tracking_url", th.StringType),
+                th.Property("tracking_url", th.StringType)
+            )
+        )),
+    ).to_dict()
+
+
+class AdSquadsStream(SnapchatAdsStream):
+    name = "ad_squads"
+    path = "/adaccounts/{ad_account_id}/adsquads"
+    parent_stream_type = AdAccountsStream
+    ignore_parent_replication_key = True
+    records_jsonpath = "$.adsquads[*].adsquad"
+    primary_keys = ["id"]
+    replication_key = "updated_at"
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("updated_at", th.DateTimeType),
+        th.Property("created_at", th.DateTimeType),
+        th.Property("name", th.StringType),
+        th.Property("status", th.StringType),
+        th.Property("campaign_id", th.IntegerType),
+        th.Property("ad_account_id", th.StringType),
+        th.Property("type", th.StringType),
+        th.Property("targeting", th.ObjectType(
+            th.Property("regulated_content", th.BooleanType),
+            th.Property("enable_targeting_expansion", th.BooleanType),
+            th.Property("demographics", th.ArrayType(th.ObjectType())),
+            th.Property("devices", th.ArrayType(th.ObjectType())),
+            th.Property("geos", th.ArrayType(th.ObjectType())),
+            th.Property("interests", th.ArrayType(th.ObjectType())),
+            th.Property("segments", th.ArrayType(th.ObjectType())),
+        )),
+        th.Property("targeting_reach_status", th.StringType),
+        th.Property("placement", th.StringType),
+        th.Property("placement_v2", th.ObjectType(
+            th.Property("config", th.StringType),
+            th.Property("platforms", th.StringType),
+            th.Property("inclusion", th.ObjectType(
+                th.Property("content_types", th.ArrayType(th.StringType))
+            )),
+            th.Property("exclusion", th.ObjectType(
+                th.Property("content_types", th.ArrayType(th.StringType))
+            )),
+        )),
+        th.Property("billing_event", th.StringType),
+        th.Property("bid_micro", th.IntegerType),
+        th.Property("auto_bid", th.BooleanType),
+        th.Property("target_bid", th.BooleanType),
+        th.Property("bid_strategy", th.StringType),
+        th.Property("daily_budget_micro", th.IntegerType),
+        th.Property("lifetime_budget_micro", th.IntegerType),
+        th.Property("start_time", th.DateTimeType),
+        th.Property("end_time", th.DateTimeType),
+        th.Property("optimization_goal", th.StringType),
+        th.Property("impression_goal", th.StringType),
+        th.Property("reach_goal", th.StringType),
+        th.Property("reach_and_frequency_status", th.StringType),
+        th.Property("reach_and_frequency_micro", th.IntegerType),
+        th.Property("delivery_constraint", th.StringType),
+        th.Property("pacing_type", th.StringType),
+        th.Property("pixel_id", th.StringType),
+        th.Property("cap_and_exclusion_config", th.ObjectType()),
+        th.Property("product_properties", th.ObjectType()),
+    ).to_dict()
+
+
+class AudienceSegmentsStream(SnapchatAdsStream):
+    name = "audience_segments"
+    path = "/adaccounts/{ad_account_id}/segments"
+    parent_stream_type = AdAccountsStream
+    ignore_parent_replication_key = True
+    records_jsonpath = "$.segments[*].segment"
+    primary_keys = ["id"]
+    replication_key = "updated_at"
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("updated_at", th.DateTimeType),
+        th.Property("created_at", th.DateTimeType),
+        th.Property("name", th.StringType),
+        th.Property("ad_account_id", th.StringType),
+        th.Property("organization_id", th.StringType),
+        th.Property("description", th.StringType),
+        th.Property("status", th.StringType),
+        th.Property("targetable_status", th.StringType),
+        th.Property("upload_status", th.StringType),
+        th.Property("source_type", th.StringType),
+        th.Property("retention_in_days", th.IntegerType),
+        th.Property("approximate_number_users", th.IntegerType),
+        th.Property("visible_to", th.ArrayType(th.StringType)),
+    ).to_dict()
+
+
+class BillingCentersStream(SnapchatAdsStream):
+    name = "billing_centers"
+    path = "/organizations/{organization_id}/billingcenters"
+    parent_stream_type = OrganizationsStream
+    ignore_parent_replication_key = True
+    records_jsonpath = "$.billingcenter[*].billingcenter"
+    primary_keys = ["id"]
+    replication_key = "updated_at"
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("updated_at", th.DateTimeType),
+        th.Property("created_at", th.DateTimeType),
+        th.Property("name", th.StringType),
+        th.Property("organization_id", th.StringType),
+        th.Property("email_address", th.StringType),
+        th.Property("address_line_1", th.StringType),
+        th.Property("locality", th.StringType),
+        th.Property("administrative_district_level_1", th.StringType),
+        th.Property("country", th.IntegerType),
+        th.Property("postal_code", th.StringType),
+        th.Property("alternative_email_addresses", th.StringType),
+    ).to_dict()
+
+
 class CampaignsStream(SnapchatAdsStream):
     name = "campaigns"
     path = "/adaccounts/{ad_account_id}/campaigns"
@@ -119,7 +268,265 @@ class CampaignsStream(SnapchatAdsStream):
         th.Property("regulations", th.ObjectType()),
     ).to_dict()
 
+
+class CreativesStream(SnapchatAdsStream):
+    name = "creatives"
+    path = "/adaccounts/{ad_account_id}/creatives"
+    parent_stream_type = AdAccountsStream
+    ignore_parent_replication_key = True
+    records_jsonpath = "$.creatives[*].creative"
+    primary_keys = ["id"]
+    replication_key = "updated_at"
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("updated_at", th.DateTimeType),
+        th.Property("created_at", th.DateTimeType),
+        th.Property("name", th.StringType),
+        th.Property("ad_account_id", th.StringType),
+        th.Property("type", th.StringType),
+        th.Property("packaging_status", th.StringType),
+        th.Property("review_status", th.StringType),
+        th.Property("shareable", th.BooleanType),
+        th.Property("headline", th.StringType),
+        th.Property("brand_name", th.StringType),
+        th.Property("call_to_action", th.StringType),
+        th.Property("render_type", th.StringType),
+        th.Property("top_snap_media_id", th.StringType),
+        th.Property("top_snap_crop_position", th.StringType),
+        th.Property("forced_view_eligibility", th.StringType),
+        th.Property("preview_creative_id", th.StringType),
+        th.Property("playback_type", th.StringType),
+        th.Property("ad_product", th.StringType),
+        th.Property("ad_to_lens_properties", th.ObjectType()),
+        th.Property("ad_to_message_properties", th.ObjectType()),
+        th.Property("app_install_properties", th.ObjectType()),
+        th.Property("collection_properties", th.ObjectType()),
+        th.Property("composite_properties", th.ObjectType()),
+        th.Property("deep_link_properties", th.ObjectType()),
+        th.Property("dynamic_render_properties", th.ObjectType()),
+        th.Property("longform_video_properties", th.ObjectType()),
+        th.Property("preview_properties", th.ObjectType()),
+        th.Property("web_view_properties", th.ObjectType()),
+    ).to_dict()
+
+
+class FundingSourcesStream(SnapchatAdsStream):
+    name = "funding_sources"
+    path = "/organizations/{organization_id}/fundingsources"
+    parent_stream_type = OrganizationsStream
+    ignore_parent_replication_key = True
+    records_jsonpath = "$.fundingsources[*].fundingsource"
+    primary_keys = ["id"]
+    replication_key = "updated_at"
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("updated_at", th.DateTimeType),
+        th.Property("created_at", th.DateTimeType),
+        th.Property("name", th.StringType),
+        th.Property("organization_id", th.StringType),
+        th.Property("type", th.StringType),
+        th.Property("status", th.StringType),
+        th.Property("currency", th.StringType),
+        th.Property("total_budget_micro", th.IntegerType),
+        th.Property("budget_spent_micro", th.IntegerType),
+        th.Property("available_credit_micro", th.IntegerType),
+        th.Property("card_type", th.StringType),
+        th.Property("last_4", th.StringType),
+        th.Property("expiration_year", th.StringType),
+        th.Property("expiration_month", th.StringType),
+        th.Property("daily_spend_limit_micro", th.IntegerType),
+        th.Property("daily_spend_limit_currency", th.StringType),
+        th.Property("value_micro", th.IntegerType),
+        th.Property("start_date", th.DateTimeType),
+        th.Property("end_date", th.DateTimeType),
+        th.Property("email", th.StringType),
+    ).to_dict()
+
+
+class MediaStream(SnapchatAdsStream):
+    name = "media"
+    path = "/adaccounts/{ad_account_id}/media"
+    parent_stream_type = AdAccountsStream
+    ignore_parent_replication_key = True
+    records_jsonpath = "$.media[*].media"
+    primary_keys = ["id"]
+    replication_key = "updated_at"
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("updated_at", th.DateTimeType),
+        th.Property("created_at", th.DateTimeType),
+        th.Property("name", th.StringType),
+        th.Property("ad_account_id", th.StringType),
+        th.Property("type", th.StringType),
+        th.Property("media_status", th.StringType),
+        th.Property("file_name", th.StringType),
+        th.Property("download_link", th.StringType),
+        th.Property("image_metadata", th.ObjectType(
+            th.Property("height_px", th.IntegerType),
+            th.Property("width_px", th.IntegerType),
+            th.Property("image_format", th.StringType),
+        )),
+        th.Property("video_metadata", th.ObjectType()),
+        th.Property("lens_package_metadata", th.ObjectType()),
+        th.Property("file_size_in_bytes", th.IntegerType),
+        th.Property("is_demo_media", th.BooleanType),
+        th.Property("hash", th.StringType),
+        th.Property("visibility", th.StringType),
+    ).to_dict()
+
+
+class MembersStream(SnapchatAdsStream):
+    name = "members"
+    path = "/organizations/{organization_id}/members"
+    parent_stream_type = OrganizationsStream
+    ignore_parent_replication_key = True
+    records_jsonpath = "$.members[*].member"
+    primary_keys = ["id"]
+    replication_key = "updated_at"
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("updated_at", th.DateTimeType),
+        th.Property("created_at", th.DateTimeType),
+        th.Property("email", th.StringType),
+        th.Property("organization_id", th.StringType),
+        th.Property("display_name", th.StringType),
+        th.Property("member_status", th.StringType),
+    ).to_dict()
+
+
+class PhoneNumbersStream(SnapchatAdsStream):
+    name = "phone_numbers"
+    path = "/adaccounts/{ad_account_id}/phone_numbers"
+    parent_stream_type = AdAccountsStream
+    ignore_parent_replication_key = True
+    records_jsonpath = "$.phone_numbers[*].phone_number"
+    primary_keys = ["id"]
+    replication_key = "updated_at"
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("updated_at", th.DateTimeType),
+        th.Property("created_at", th.DateTimeType),
+        th.Property("ad_account_id", th.StringType),
+        th.Property("name", th.StringType),
+        th.Property("country_code", th.StringType),
+        th.Property("numerical_country_code", th.StringType),
+        th.Property("phone_number", th.StringType),
+        th.Property("verification_status", th.StringType),
+    ).to_dict()
+
+
+class PixelsStream(SnapchatAdsStream):
+    name = "pixel_domain_stats"
+    path = "/adaccounts/{ad_account_id}/pixels"
+    parent_stream_type = AdAccountsStream
+    ignore_parent_replication_key = True
+    records_jsonpath = "$.pixels[*].pixel"
+    primary_keys = ["id"]
+    replication_key = "updated_at"
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("updated_at", th.DateTimeType),
+        th.Property("created_at", th.DateTimeType),
+        th.Property("ad_account_id", th.StringType),
+        th.Property("name", th.StringType),
+        th.Property("status", th.StringType),
+        th.Property("effective_status", th.StringType),
+        th.Property("pixel_javascript", th.StringType),
+        th.Property("visible_to", th.ArrayType(th.StringType)),
+    ).to_dict()
+
     def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
         return {
-            'ad_account_id': record["id"]
+            "pixel_id": record["id"]
         }
+
+
+class PixelDomainStatsStream(SnapchatAdsStream):
+    name = "pixel_domain_stats"
+    path = "/pixels/{pixel_id}/domains/stats"
+    parent_stream_type = PixelsStream
+    ignore_parent_replication_key = True
+    records_jsonpath = "$.timeseries_stats[*].timeseries_stat"
+    primary_keys = ["id"]
+    replication_key = None
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("start_time", th.DateTimeType),
+        th.Property("end_time", th.DateTimeType),
+        th.Property("type", th.StringType),
+        th.Property("pixel_id", th.StringType),
+        th.Property("domains", th.ArrayType(
+            th.ObjectType(
+              th.Property("domain_name", th.StringType),
+              th.Property("total_events", th.IntegerType),
+            ),
+        )),
+    ).to_dict()
+
+
+class ProductCatalogsStream(SnapchatAdsStream):
+    name = "product_catalogs"
+    path = "/organizations/{organization_id}/catalogs"
+    parent_stream_type = OrganizationsStream
+    ignore_parent_replication_key = True
+    records_jsonpath = "$.catalogs[*].catalog"
+    primary_keys = ["id"]
+    replication_key = "updated_at"
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("updated_at", th.DateTimeType),
+        th.Property("created_at", th.DateTimeType),
+        th.Property("organization_id", th.StringType),
+        th.Property("name", th.StringType),
+        th.Property("source", th.StringType),
+        th.Property("default_product_set_id", th.StringType),
+        th.Property("event_sources", th.ArrayType(
+            th.ObjectType(
+                th.Property("id", th.StringType),
+                th.Property("type", th.StringType),
+            )
+        )),
+    ).to_dict()
+
+    def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
+        return {
+            "product_catalog_id": record["id"]
+        }
+
+
+class ProductSetsStream(SnapchatAdsStream):
+    name = "product_sets"
+    path = "/catalogs/{product_catalog_id}/product_sets"
+    parent_stream_type = ProductCatalogsStream
+    ignore_parent_replication_key = True
+    records_jsonpath = "$.product_sets[*].product_set"
+    primary_keys = ["id"]
+    replication_key = None
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("catalog_id", th.StringType),
+        th.Property("name", th.StringType),
+        th.Property("filter", th.ObjectType()),
+        th.Property("updated_at", th.DateTimeType),
+        th.Property("created_at", th.DateTimeType),
+    ).to_dict()
+
+
+class RolesStream(SnapchatAdsStream):
+    name = "roles"
+    path = "/organizations/{organization_id}/roles"
+    parent_stream_type = OrganizationsStream
+    ignore_parent_replication_key = True
+    records_jsonpath = "$.roles[*].role"
+    primary_keys = ["id"]
+    replication_key = None
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("updated_at", th.DateTimeType),
+        th.Property("created_at", th.DateTimeType),
+        th.Property("container_kind", th.StringType),
+        th.Property("container_id", th.StringType),
+        th.Property("member_id", th.StringType),
+        th.Property("organization_id", th.StringType),
+        th.Property("type", th.StringType),
+    ).to_dict()
