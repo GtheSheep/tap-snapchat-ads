@@ -1,8 +1,8 @@
 """Stream type classes for tap-snapchat-ads."""
-
+import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional, Union, List, Iterable
-
+import requests
 from singer_sdk import typing as th  # JSON Schema typing helpers
 
 from tap_snapchat_ads.client import SnapchatAdsStream
@@ -132,6 +132,11 @@ class AdsStream(SnapchatAdsStream):
         )),
     ).to_dict()
 
+    def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
+        return {
+            "ad_id": record["id"]
+        }
+
 
 class AdSquadsStream(SnapchatAdsStream):
     name = "ad_squads"
@@ -191,6 +196,11 @@ class AdSquadsStream(SnapchatAdsStream):
         th.Property("cap_and_exclusion_config", th.ObjectType()),
         th.Property("product_properties", th.ObjectType()),
     ).to_dict()
+
+    def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
+        return {
+            "ad_squad_id": record["id"]
+        }
 
 
 class AudienceSegmentsStream(SnapchatAdsStream):
@@ -267,6 +277,11 @@ class CampaignsStream(SnapchatAdsStream):
         th.Property("measurement_spec", th.ObjectType()),
         th.Property("regulations", th.ObjectType()),
     ).to_dict()
+
+    def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
+        return {
+            "campaign_id": record["id"]
+        }
 
 
 class CreativesStream(SnapchatAdsStream):
@@ -530,3 +545,126 @@ class RolesStream(SnapchatAdsStream):
         th.Property("organization_id", th.StringType),
         th.Property("type", th.StringType),
     ).to_dict()
+
+
+ALL_STATS_FIELDS = 'android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_sign_ups,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,attachment_frequency,attachment_uniques,frequency,uniques'
+
+
+class StatsStream(SnapchatAdsStream):
+    ignore_parent_replication_key = True
+    primary_keys = ['id', 'start_time']
+    replication_key = 'start_time'
+    granularity = 'DAY'
+    date_step_days = 30
+    fields = ALL_STATS_FIELDS
+    properties = [
+        th.Property("id", th.StringType),
+        th.Property("start_time", th.DateTimeType),
+        th.Property("end_time", th.DateTimeType),
+        th.Property("type", th.StringType),
+        th.Property("granularity", th.StringType),
+        th.Property("swipe_up_attribution_window", th.StringType),
+        th.Property("view_attribution_window", th.StringType),
+        th.Property("finalized_data_end_time", th.DateTimeType)
+    ]
+    properties += [th.Property(metric, th.IntegerType) for metric in fields.split(',')]
+    schema = th.PropertiesList(*properties).to_dict()
+
+    def get_url_params(
+            self, context: Optional[dict], next_page_token: Optional[Any]
+    ) -> Dict[str, Any]:
+        if next_page_token:
+            start_date = next_page_token['start_date']
+        else:
+            start_date = self.get_starting_timestamp(context)
+        end_date = start_date + datetime.timedelta(days=self.date_step_days)
+        params = {
+            'fields': self.fields,
+            'granularity': self.granularity,
+            'omit_empty': 'false',
+            "start_time": start_date.strftime("%Y-%m-%dT%H:%M:%S"),
+            "end_time": end_date.strftime("%Y-%m-%dT%H:%M:%S"),
+            'conversion_source_types': 'web,app,total',
+            'swipe_up_attribution_window': self.config['swipe_up_attribution_window'],
+            'view_attribution_window': self.config['view_attribution_window'],
+        }
+        return params
+
+    def parse_response(self, response: requests.Response) -> Iterable[dict]:
+        response_json = response.json()
+        for timeseries_stat in response_json['timeseries_stats']:
+            for data_point in timeseries_stat['timeseries_stat']['timeseries']:
+                new_row = timeseries_stat['timeseries_stat'].copy()
+                new_row.pop('timeseries')
+                new_row['start_time'] = data_point['start_time']
+                new_row['end_time'] = data_point['end_time']
+                new_row = dict(new_row, **data_point['stats'])
+                yield new_row
+
+
+class StatsDailyStream(StatsStream):
+    ignore_parent_replication_key = True
+    primary_keys = ['id', 'start_time']
+    replication_key = 'start_time'
+    granularity = 'DAY'
+    date_step_days = 30
+    fields = ALL_STATS_FIELDS
+
+
+class AdAccountStatsDailyStream(StatsDailyStream):
+    name = "ad_account_stats_daily"
+    path = "/adaccounts/{ad_account_id}/stats"
+    parent_stream_type = AdAccountsStream
+    fields = 'spend'
+
+
+class CampaignStatsDailyStream(StatsDailyStream):
+    name = "campaign_stats_daily"
+    path = "/campaigns/{campaign_id}/stats"
+    parent_stream_type = CampaignsStream
+
+
+class AdSquadStatsDailyStream(StatsDailyStream):
+    name = "ad_squad_stats_daily"
+    path = "/adsquads/{ad_squad_id}/stats"
+    parent_stream_type = AdSquadsStream
+
+
+class AdStatsDailyStream(StatsDailyStream):
+    name = "ad_stats_daily"
+    path = "/ads/{ad_squad_id}/stats"
+    parent_stream_type = AdsStream
+
+
+class StatsHourlyStream(StatsStream):
+    ignore_parent_replication_key = True
+    primary_keys = ['id', 'start_time']
+    replication_key = 'start_time'
+    granularity = 'HOUR'
+    date_step_days = 7
+    fields = ALL_STATS_FIELDS
+
+
+class AdAccountStatsHourlyStream(StatsHourlyStream):
+    name = "ad_account_stats_hourly"
+    path = "/adaccounts/{ad_account_id}/stats"
+    parent_stream_type = AdAccountsStream
+    fields = 'spend'
+
+
+class CampaignStatsHourlyStream(StatsHourlyStream):
+    name = "campaign_stats_hourly"
+    path = "/campaigns/{campaign_id}/stats"
+    parent_stream_type = CampaignsStream
+
+
+class AdSquadStatsHourlyStream(StatsHourlyStream):
+    name = "ad_squad_stats_hourly"
+    path = "/adsquads/{ad_squad_id}/stats"
+    parent_stream_type = AdSquadsStream
+
+
+class AdStatsHourlyStream(StatsHourlyStream):
+    name = "ad_stats_hourly"
+    path = "/ads/{ad_squad_id}/stats"
+    parent_stream_type = AdsStream
