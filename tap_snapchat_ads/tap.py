@@ -23,6 +23,14 @@ from tap_snapchat_ads.streams import (
     ProductCatalogsStream,
     ProductSetsStream,
     RolesStream,
+    AdAccountStatsDailyStream,
+    CampaignStatsDailyStream,
+    AdSquadStatsDailyStream,
+    AdStatsDailyStream,
+    AdAccountStatsHourlyStream,
+    CampaignStatsHourlyStream,
+    AdSquadStatsHourlyStream,
+    AdStatsHourlyStream,
 )
 STREAM_TYPES = [
     OrganizationsStream,
@@ -42,6 +50,14 @@ STREAM_TYPES = [
     ProductCatalogsStream,
     ProductSetsStream,
     RolesStream,
+    AdAccountStatsDailyStream,
+    CampaignStatsDailyStream,
+    AdSquadStatsDailyStream,
+    AdStatsDailyStream,
+    AdAccountStatsHourlyStream,
+    CampaignStatsHourlyStream,
+    AdSquadStatsHourlyStream,
+    AdStatsHourlyStream,
 ]
 
 
@@ -54,22 +70,48 @@ class TapSnapchatAds(Tap):
             "client_id",
             th.StringType,
             required=True,
-            secret=True,  # Flag config as protected.
-            description="The token to authenticate against the API service"
+            secret=True,
+            description="Client ID"
         ),
         th.Property(
             "client_secret",
             th.StringType,
             required=True,
-            secret=True,  # Flag config as protected.
-            description="The token to authenticate against the API service"
+            secret=True,
+            description="Client Secret"
         ),
         th.Property(
             "refresh_token",
             th.StringType,
             required=True,
-            secret=True,  # Flag config as protected.
-            description="The token to authenticate against the API service"
+            secret=True,
+            description="Refresh token"
+        ),
+        th.Property(
+            "swipe_up_attribution_window",
+            th.StringType,
+            required=False,
+            default="28_DAY",
+            description="Attribution window for swipe ups: 1_DAY, 7_DAY, 28_DAY (default)"
+        ),
+        th.Property(
+            "view_attribution_window",
+            th.StringType,
+            required=False,
+            default="1_DAY",
+            description="Attribution window for views: 1_HOUR, 3_HOUR, 6_HOUR, 1_DAY (default), 7_DAY, 28_DAY"
+        ),
+        th.Property(
+            "user_agent",
+            th.StringType,
+            required=False,
+            description="User agent"
+        ),
+        th.Property(
+            "start_date",
+            th.DateTimeType,
+            required=True,
+            description="Start date for stats"
         ),
     ).to_dict()
 
