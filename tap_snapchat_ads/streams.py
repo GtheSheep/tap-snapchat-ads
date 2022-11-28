@@ -668,3 +668,124 @@ class AdStatsHourlyStream(StatsHourlyStream):
     name = "ad_stats_hourly"
     path = "/ads/{ad_squad_id}/stats"
     parent_stream_type = AdsStream
+
+
+class TargetingStream(SnapchatAdsStream):
+    ignore_parent_replication_key = True
+    primary_keys = ["id"]
+    replication_key = None
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("targeting_group", th.StringType),
+        th.Property("targeting_type", th.StringType),
+        th.Property("name", th.StringType),
+        th.Property("path", th.StringType),
+        th.Property("source", th.StringType),
+        th.Property("parent_id", th.StringType),
+        th.Property("country_code", th.StringType),
+    ).to_dict()
+
+
+class AgeGroupsTargetingStream(TargetingStream):
+    name = 'targeting_age_groups'
+    path = "/targeting/demographics/age_group"
+    records_jsonpath = "$.targeting_dimensions[*].age_group"
+
+
+class GendersTargetingStream(TargetingStream):
+    name = 'targeting_genders'
+    path = "/targeting/demographics/gender"
+    records_jsonpath = "$.targeting_dimensions[*].gender"
+
+
+class LanguagesTargetingStream(TargetingStream):
+    name = 'targeting_languages'
+    path = "/targeting/demographics/languages"
+    records_jsonpath = "$.targeting_dimensions[*].languages"
+
+
+class AdvancedDemographicsTargetingStream(TargetingStream):
+    name = 'targeting_advanced_demographics'
+    path = "/targeting/demographics/advanced_demographics"
+    records_jsonpath = "$.targeting_dimensions[*].advanced_demographics"
+
+
+class ConnectionTypesTargetingStream(TargetingStream):
+    name = 'targeting_connection_types'
+    path = "/targeting/device/connection_type"
+    records_jsonpath = "$.targeting_dimensions[*].connection_type"
+
+
+class OSTypesTargetingStream(TargetingStream):
+    name = 'targeting_os_types'
+    path = "/targeting/device/os_type"
+    records_jsonpath = "$.targeting_dimensions[*].os_type"
+
+
+class IOSVersionsTargetingStream(TargetingStream):
+    name = 'targeting_ios_versions'
+    path = "/targeting/device/iOS/os_version"
+    records_jsonpath = "$.targeting_dimensions[*].os_version"
+
+
+class AndroidVersionsTargetingStream(TargetingStream):
+    name = 'targeting_android_versions'
+    path = "/targeting/device/ANDROID/os_version"
+    records_jsonpath = "$.targeting_dimensions[*].os_version"
+
+
+class CarrierTargetingStream(TargetingStream):
+    name = 'targeting_carriers'
+    path = "/targeting/device/carrier"
+    records_jsonpath = "$.targeting_dimensions[*].carrier"
+
+
+class DeviceMakeTargetingStream(TargetingStream):
+    name = 'targeting_device_makes'
+    path = "/targeting/device/marketing_name"
+    records_jsonpath = "$.targeting_dimensions[*].marketing_name"
+
+
+class CountriesTargetingStream(TargetingStream):
+    name = 'targeting_countries'
+    path = "/targeting/geo/country"
+    records_jsonpath = "$.targeting_dimensions[*].country"
+
+
+# TODO: Add streams for configurable targeting countries
+
+
+class InterestsDLXSTargetingStream(TargetingStream):
+    name = 'targeting_interests_dlxs'
+    path = "/targeting/interests/dlxs"
+    records_jsonpath = "$.targeting_dimensions[*].dlxs"
+
+
+class InterestsDLXCTargetingStream(TargetingStream):
+    name = 'targeting_interests_dlxc'
+    path = "/targeting/interests/dlxc"
+    records_jsonpath = "$.targeting_dimensions[*].dlxc"
+
+
+class InterestsDLXPTargetingStream(TargetingStream):
+    name = 'targeting_interests_dlxp'
+    path = "/targeting/interests/dlxp"
+    records_jsonpath = "$.targeting_dimensions[*].dlxp"
+
+
+class InterestsNLNTargetingStream(TargetingStream):
+    name = 'targeting_interests_nln'
+    path = "/targeting/interests/nln"
+    records_jsonpath = "$.targeting_dimensions[*].nln"
+
+
+class InterestsPLCTargetingStream(TargetingStream):
+    name = 'targeting_interests_plc'
+    path = "/targeting/interests/plc"
+    records_jsonpath = "$.targeting_dimensions[*].plc"
+
+
+class LocationCategoriesTargetingStream(TargetingStream):
+    name = 'targeting_location_categories'
+    path = "/targeting/location/categories_loi"
+    records_jsonpath = "$.targeting_dimensions[*].categories_loi"
