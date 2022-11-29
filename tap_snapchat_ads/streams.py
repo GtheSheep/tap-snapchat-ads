@@ -820,7 +820,6 @@ class LocationCategoriesTargetingStream(TargetingStream):
 
 class TargetingGeoStream(SnapchatAdsStream):
     ignore_parent_replication_key = True
-    primary_keys = ["id"]
     replication_key = None
     schema = th.PropertiesList(
         th.Property("id", th.StringType),
@@ -831,6 +830,7 @@ class TargetingGeoStream(SnapchatAdsStream):
         th.Property("source", th.StringType),
         th.Property("parent_id", th.StringType),
         th.Property("country_code", th.StringType),
+        th.Property("postalCode", th.StringType),
         th.Property("continent", th.ObjectType(
             th.Property("id", th.StringType),
             th.Property("name", th.StringType),
@@ -863,6 +863,11 @@ class CountriesTargetingGeoStream(TargetingGeoStream):
     name = 'targeting_countries'
     path = "/targeting/geo/country"
     records_jsonpath = "$.targeting_dimensions[*].country"
+    primary_keys = ["id"]
+
+    def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
+        row["id"] = row['country']['id']
+        return row
 
 
 class TargetingGeoStreamMultiCountry(TargetingGeoStream):
@@ -891,15 +896,30 @@ class RegionsTargetingGeoMultiCountryStream(TargetingGeoStreamMultiCountry):
     name = 'targeting_regions'
     path = "/targeting/geo/{country_code}/region"
     records_jsonpath = "$.targeting_dimensions[*].region"
+    primary_keys = ["id", "country_code"]
+
+    def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
+        row["id"] = row['region']['id']
+        return row
 
 
 class MetrosTargetingGeoMultiCountryStream(TargetingGeoStreamMultiCountry):
     name = 'targeting_metros'
     path = "/targeting/geo/{country_code}/metro"
     records_jsonpath = "$.targeting_dimensions[*].metro"
+    primary_keys = ["id", "country_code"]
+
+    def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
+        row["id"] = row['metro']['id']
+        return row
 
 
 class PostalCodesTargetingGeoMultiCountryStream(TargetingGeoStreamMultiCountry):
     name = 'targeting_postal_codes'
     path = "/targeting/geo/{country_code}/postal_code"
     records_jsonpath = "$.targeting_dimensions[*].postal_code"
+    primary_keys = ["id", "country_code"]
+
+    def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
+        row["id"] = row["postalCode"]
+        return row
