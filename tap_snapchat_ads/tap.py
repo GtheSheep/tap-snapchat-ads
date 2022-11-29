@@ -41,13 +41,16 @@ from tap_snapchat_ads.streams import (
     AndroidVersionsTargetingStream,
     CarrierTargetingStream,
     DeviceMakeTargetingStream,
-#     CountriesTargetingStream,
+    CountriesTargetingGeoStream,
     InterestsDLXSTargetingStream,
     InterestsDLXCTargetingStream,
     InterestsDLXPTargetingStream,
     InterestsNLNTargetingStream,
     InterestsPLCTargetingStream,
     LocationCategoriesTargetingStream,
+    RegionsTargetingGeoMultiCountryStream,
+    MetrosTargetingGeoMultiCountryStream,
+    PostalCodesTargetingGeoMultiCountryStream,
 )
 STREAM_TYPES = [
     OrganizationsStream,
@@ -85,13 +88,16 @@ STREAM_TYPES = [
     AndroidVersionsTargetingStream,
     CarrierTargetingStream,
     DeviceMakeTargetingStream,
-#     CountriesTargetingStream,
+    CountriesTargetingGeoStream,
     InterestsDLXSTargetingStream,
     InterestsDLXCTargetingStream,
     InterestsDLXPTargetingStream,
     InterestsNLNTargetingStream,
     InterestsPLCTargetingStream,
     LocationCategoriesTargetingStream,
+    RegionsTargetingGeoMultiCountryStream,
+    MetrosTargetingGeoMultiCountryStream,
+    PostalCodesTargetingGeoMultiCountryStream,
 ]
 
 
@@ -146,6 +152,13 @@ class TapSnapchatAds(Tap):
             th.DateTimeType,
             required=True,
             description="Start date for stats"
+        ),
+        th.Property(
+            "targeting_country_codes",
+            th.ArrayType(th.StringType),
+            required=False,
+            default=[],
+            description="List of lower - case 2 - letter ISO Country Codes for Ads Targeting."
         ),
     ).to_dict()
 
