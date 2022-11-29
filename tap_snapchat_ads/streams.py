@@ -782,12 +782,6 @@ class DeviceMakeTargetingStream(TargetingStream):
     records_jsonpath = "$.targeting_dimensions[*].marketing_name"
 
 
-class CountriesTargetingStream(TargetingStream):
-    name = 'targeting_countries'
-    path = "/targeting/geo/country"
-    records_jsonpath = "$.targeting_dimensions[*].country"
-
-
 # TODO: Add streams for configurable targeting countries
 
 
