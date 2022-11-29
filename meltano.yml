@@ -19,10 +19,15 @@ plugins:
       client_id: ""
       client_secret: ""
       refresh_token: ""
+      targeting_country_codes:
+        - "gb"
+      start_date: "2022-01-01T00:00:00Z"
     settings:
     - name: client_id
     - name: client_secret
     - name: refresh_token
+    - name: targeting_country_codes
+    - name: start_date
   loaders:
   - name: target-jsonl
     variant: andyh1203
