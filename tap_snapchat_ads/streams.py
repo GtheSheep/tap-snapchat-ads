@@ -1,8 +1,12 @@
 """Stream type classes for tap-snapchat-ads."""
 import datetime
+import pytz
 from pathlib import Path
 from typing import Any, Dict, Optional, Union, List, Iterable
+from urllib.parse import urlparse, parse_qs
+
 import requests
+from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk import typing as th  # JSON Schema typing helpers
 
 from tap_snapchat_ads.client import SnapchatAdsStream
@@ -569,26 +573,56 @@ class StatsStream(SnapchatAdsStream):
     ]
     properties += [th.Property(metric, th.IntegerType) for metric in fields.split(',')]
     schema = th.PropertiesList(*properties).to_dict()
+    max_timestamp = datetime.datetime.now()
 
     def get_url_params(
             self, context: Optional[dict], next_page_token: Optional[Any]
     ) -> Dict[str, Any]:
         if next_page_token:
-            start_date = next_page_token['start_date']
+            start_time = next_page_token['start_time']
         else:
-            start_date = self.get_starting_timestamp(context)
-        end_date = start_date + datetime.timedelta(days=self.date_step_days)
+            start_time = self.get_starting_timestamp(context)
+        end_time = min(
+            (start_time + datetime.timedelta(days=self.date_step_days)).replace(tzinfo=pytz.UTC),
+            self.max_timestamp.replace(tzinfo=pytz.UTC)
+        )
         params = {
             'fields': self.fields,
             'granularity': self.granularity,
             'omit_empty': 'false',
-            "start_time": start_date.strftime("%Y-%m-%dT%H:%M:%S"),
-            "end_time": end_date.strftime("%Y-%m-%dT%H:%M:%S"),
+            "start_time": start_time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "end_time": end_time.strftime("%Y-%m-%dT%H:%M:%S"),
             'conversion_source_types': 'web,app,total',
             'swipe_up_attribution_window': self.config['swipe_up_attribution_window'],
             'view_attribution_window': self.config['view_attribution_window'],
         }
+        if next_page_token:
+            if next_page_token.get('cursor'):
+                params['cursor'] = next_page_token['cursor']
+            if next_page_token.get('limit'):
+                params['limit'] = next_page_token['limit']
         return params
+
+    def get_next_page_token(
+        self, response: requests.Response, previous_token: Optional[Any]
+    ) -> Optional[Any]:
+        """Return a token for identifying next page or None if no more pages."""
+        if self.next_page_token_jsonpath:
+            all_matches = extract_jsonpath(
+                self.next_page_token_jsonpath, response.json()
+            )
+            first_match = next(iter(all_matches), None)
+            next_page_link_parsed = urlparse(first_match)
+            next_page_token = parse_qs(next_page_link_parsed.query)
+        else:
+            next_page_token = response.headers.get("X-Next-Page", None)
+            first_match = None
+
+        if not first_match and not next_page_token:
+            end_time = datetime.datetime.strptime(parse_qs(urlparse(response.request.url).query)['end_time'][0], "%Y-%m-%dT%H:%M:%S")
+            if end_time < self.max_timestamp:
+                next_page_token = {"start_time": end_time}
+        return next_page_token
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         response_json = response.json()
@@ -609,6 +643,7 @@ class StatsDailyStream(StatsStream):
     granularity = 'DAY'
     date_step_days = 30
     fields = ALL_STATS_FIELDS
+    max_timestamp = datetime.datetime.now(tz=None).replace(hour=0, minute=0, second=0, microsecond=0)
 
 
 class AdAccountStatsDailyStream(StatsDailyStream):
@@ -643,6 +678,7 @@ class StatsHourlyStream(StatsStream):
     granularity = 'HOUR'
     date_step_days = 7
     fields = ALL_STATS_FIELDS
+    max_timestamp = datetime.datetime.now(tz=None).replace(minute=0, second=0, microsecond=0)
 
 
 class AdAccountStatsHourlyStream(StatsHourlyStream):
