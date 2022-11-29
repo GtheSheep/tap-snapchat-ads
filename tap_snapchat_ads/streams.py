@@ -782,9 +782,6 @@ class DeviceMakeTargetingStream(TargetingStream):
     records_jsonpath = "$.targeting_dimensions[*].marketing_name"
 
 
-# TODO: Add streams for configurable targeting countries
-
-
 class InterestsDLXSTargetingStream(TargetingStream):
     name = 'targeting_interests_dlxs'
     path = "/targeting/interests/dlxs"
@@ -819,3 +816,90 @@ class LocationCategoriesTargetingStream(TargetingStream):
     name = 'targeting_location_categories'
     path = "/targeting/location/categories_loi"
     records_jsonpath = "$.targeting_dimensions[*].categories_loi"
+
+
+class TargetingGeoStream(SnapchatAdsStream):
+    ignore_parent_replication_key = True
+    primary_keys = ["id"]
+    replication_key = None
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("targeting_group", th.StringType),
+        th.Property("targeting_type", th.StringType),
+        th.Property("name", th.StringType),
+        th.Property("path", th.StringType),
+        th.Property("source", th.StringType),
+        th.Property("parent_id", th.StringType),
+        th.Property("country_code", th.StringType),
+        th.Property("continent", th.ObjectType(
+            th.Property("id", th.StringType),
+            th.Property("name", th.StringType),
+            th.Property("full_name", th.StringType),
+        )),
+        th.Property("country", th.ObjectType(
+            th.Property("id", th.StringType),
+            th.Property("name", th.StringType),
+            th.Property("code", th.StringType),
+            th.Property("code2", th.StringType),
+        )),
+        th.Property("region", th.ObjectType(
+            th.Property("id", th.StringType),
+            th.Property("name", th.StringType),
+            th.Property("code", th.StringType),
+        )),
+        th.Property("metro", th.ObjectType(
+            th.Property("id", th.StringType),
+            th.Property("name", th.StringType),
+            th.Property("regions", th.StringType),
+        )),
+        th.Property("city", th.ObjectType(
+            th.Property("id", th.StringType),
+            th.Property("name", th.StringType),
+        )),
+    ).to_dict()
+
+
+class CountriesTargetingGeoStream(TargetingGeoStream):
+    name = 'targeting_countries'
+    path = "/targeting/geo/country"
+    records_jsonpath = "$.targeting_dimensions[*].country"
+
+
+class TargetingGeoStreamMultiCountry(TargetingGeoStream):
+
+    def get_records(self, context: Optional[dict]) -> Iterable[dict[str, Any]]:
+        """Return a generator of record-type dictionary objects.
+        Each record emitted should be a dictionary of property names to their values.
+        Args:
+            context: Stream partition or context dictionary.
+        Yields:
+            One item per (possibly processed) record in the API.
+        """
+        for country_code in self.config["targeting_country_codes"]:
+            if context is None:
+                context = {}
+            context["country_code"] = country_code
+            for record in self.request_records(context):
+                transformed_record = self.post_process(record, context)
+                if transformed_record is None:
+                    # Record filtered out during post_process()
+                    continue
+                yield transformed_record
+
+
+class RegionsTargetingGeoMultiCountryStream(TargetingGeoStreamMultiCountry):
+    name = 'targeting_regions'
+    path = "/targeting/geo/{country_code}/region"
+    records_jsonpath = "$.targeting_dimensions[*].region"
+
+
+class MetrosTargetingGeoMultiCountryStream(TargetingGeoStreamMultiCountry):
+    name = 'targeting_metros'
+    path = "/targeting/geo/{country_code}/metro"
+    records_jsonpath = "$.targeting_dimensions[*].metro"
+
+
+class PostalCodesTargetingGeoMultiCountryStream(TargetingGeoStreamMultiCountry):
+    name = 'targeting_postal_codes'
+    path = "/targeting/geo/{country_code}/postal_code"
+    records_jsonpath = "$.targeting_dimensions[*].postal_code"
