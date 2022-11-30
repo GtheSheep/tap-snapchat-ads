@@ -900,6 +900,7 @@ class RegionsTargetingGeoMultiCountryStream(TargetingGeoStreamMultiCountry):
 
     def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
         row["id"] = row['region']['id']
+        row['country_code'] = context['country_code']
         return row
 
 
@@ -911,6 +912,7 @@ class MetrosTargetingGeoMultiCountryStream(TargetingGeoStreamMultiCountry):
 
     def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
         row["id"] = row['metro']['id']
+        row['country_code'] = context['country_code']
         return row
 
 
@@ -922,4 +924,5 @@ class PostalCodesTargetingGeoMultiCountryStream(TargetingGeoStreamMultiCountry):
 
     def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
         row["id"] = row["postalCode"]
+        row['country_code'] = context['country_code']
         return row
