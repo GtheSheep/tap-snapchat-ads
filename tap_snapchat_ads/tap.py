@@ -150,7 +150,8 @@ class TapSnapchatAds(Tap):
         th.Property(
             "start_date",
             th.DateTimeType,
-            required=True,
+            required=False,
+            default="2022-01-01T00:00:00Z",
             description="Start date for stats"
         ),
         th.Property(
