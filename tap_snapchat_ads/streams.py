@@ -667,7 +667,7 @@ class AdSquadStatsDailyStream(StatsDailyStream):
 
 class AdStatsDailyStream(StatsDailyStream):
     name = "ad_stats_daily"
-    path = "/ads/{ad_squad_id}/stats"
+    path = "/ads/{ad_id}/stats"
     parent_stream_type = AdsStream
 
 
@@ -702,7 +702,7 @@ class AdSquadStatsHourlyStream(StatsHourlyStream):
 
 class AdStatsHourlyStream(StatsHourlyStream):
     name = "ad_stats_hourly"
-    path = "/ads/{ad_squad_id}/stats"
+    path = "/ads/{ad_id}/stats"
     parent_stream_type = AdsStream
 
 
