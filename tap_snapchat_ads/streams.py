@@ -156,7 +156,7 @@ class AdSquadsStream(SnapchatAdsStream):
         th.Property("created_at", th.DateTimeType),
         th.Property("name", th.StringType),
         th.Property("status", th.StringType),
-        th.Property("campaign_id", th.IntegerType),
+        th.Property("campaign_id", th.StringType),
         th.Property("ad_account_id", th.StringType),
         th.Property("type", th.StringType),
         th.Property("targeting", th.ObjectType(
