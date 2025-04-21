@@ -571,7 +571,7 @@ class StatsStream(SnapchatAdsStream):
         th.Property("view_attribution_window", th.StringType),
         th.Property("finalized_data_end_time", th.DateTimeType)
     ]
-    properties += [th.Property(metric, th.IntegerType) for metric in fields.split(',')]
+    properties += [th.Property(metric, th.NumberType) for metric in fields.split(',')]
     schema = th.PropertiesList(*properties).to_dict()
     max_timestamp = datetime.datetime.now()
 
