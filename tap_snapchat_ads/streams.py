@@ -156,7 +156,7 @@ class AdSquadsStream(SnapchatAdsStream):
         th.Property("created_at", th.DateTimeType),
         th.Property("name", th.StringType),
         th.Property("status", th.StringType),
-        th.Property("campaign_id", th.IntegerType),
+        th.Property("campaign_id", th.StringType),
         th.Property("ad_account_id", th.StringType),
         th.Property("type", th.StringType),
         th.Property("targeting", th.ObjectType(
@@ -571,7 +571,7 @@ class StatsStream(SnapchatAdsStream):
         th.Property("view_attribution_window", th.StringType),
         th.Property("finalized_data_end_time", th.DateTimeType)
     ]
-    properties += [th.Property(metric, th.IntegerType) for metric in fields.split(',')]
+    properties += [th.Property(metric, th.NumberType) for metric in fields.split(',')]
     schema = th.PropertiesList(*properties).to_dict()
     max_timestamp = datetime.datetime.now()
 
@@ -667,7 +667,7 @@ class AdSquadStatsDailyStream(StatsDailyStream):
 
 class AdStatsDailyStream(StatsDailyStream):
     name = "ad_stats_daily"
-    path = "/ads/{ad_squad_id}/stats"
+    path = "/ads/{ad_id}/stats"
     parent_stream_type = AdsStream
 
 
@@ -702,7 +702,7 @@ class AdSquadStatsHourlyStream(StatsHourlyStream):
 
 class AdStatsHourlyStream(StatsHourlyStream):
     name = "ad_stats_hourly"
-    path = "/ads/{ad_squad_id}/stats"
+    path = "/ads/{ad_id}/stats"
     parent_stream_type = AdsStream
 
 
