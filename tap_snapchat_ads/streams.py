@@ -262,7 +262,7 @@ class CampaignsStream(SnapchatAdsStream):
     path = "/adaccounts/{ad_account_id}/campaigns"
     parent_stream_type = AdAccountsStream
     ignore_parent_replication_key = True
-    records_jsonpath = "$.campaigns[*].campaigns"
+    records_jsonpath = "$.campaigns[*].campaign"
     primary_keys = ["id"]
     replication_key = "updated_at"
     schema = th.PropertiesList(
